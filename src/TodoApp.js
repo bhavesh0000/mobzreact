@@ -27,6 +27,7 @@ function DraggableTask({ task, moveTask, index }){
         </div>
     )
 }
+const db = getFirestore()
 const TodoList = ({user}) => {
     const [taskTitle, setTaskTitle] = useState('');
     const [taskDescription, setTaskDescription] = useState('');
@@ -39,7 +40,7 @@ const TodoList = ({user}) => {
         updatedTasks.splice(toIndex, 0, movedTask)
         setTasks(updatedTasks)
     }
-    const db = getFirestore()
+    
     useEffect(() =>{
         const fetchTasks = async () => {
             const taskCollection = collection(db, 'tasks')
