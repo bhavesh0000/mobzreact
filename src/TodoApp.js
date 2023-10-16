@@ -19,16 +19,20 @@ function DraggableTask({ task, moveTask, index }){
         }
     })
     return(
-        <div ref={(node) => ref(drop(node))}>
-            {task.title}
-            {task.taskDescription}
-            {task.taskDueDate}
-            {task.taskPriority}
+        <div ref={(node) => ref(drop(node))}
+        style={{border: "1px solid black", margin: "10px", padding: "10px", borderRadius: "5px"}}>
+            <h3>{task.title}</h3>
+            <p>{task.description}</p>
+            <p>Due Date: {task.dueDate}</p>
+           <p>Priority: <span style={{color: task.priority === 'High' ? 'red' : (task.priority === 'Medium' ? 'orange' : 'green')}}>
+            {task.priority}
+            </span></p>
         </div>
     )
 }
 const db = getFirestore()
 const TodoList = ({user}) => {
+    const [listName, setListName] = useState('')
     const [taskTitle, setTaskTitle] = useState('');
     const [taskDescription, setTaskDescription] = useState('');
     const [taskDueDate, setTaskDueDate] = useState('');
@@ -43,13 +47,41 @@ const TodoList = ({user}) => {
     
     useEffect(() =>{
         const fetchTasks = async () => {
+            const user = auth.currentUser
+            if (!user) {
+                console.error('User not authenticated.')
+                return
+            }
             const taskCollection = collection(db, 'tasks')
             const taskSnapshot = await getDocs(taskCollection)
-            const tasksData = taskSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data()}))
+            const tasksData = taskSnapshot.docs
+            .filter(doc => doc.data().userId === user.uid)
+            .map(doc => ({ id: doc.id, ...doc.data()}))
             setTasks(tasksData)
         }
         fetchTasks()
     }, [])
+    const handleAddList = async() =>{
+        try{
+            const user = auth.currentUser
+            if(!user) {
+                console.error('User not authenticated.')
+                return
+            }
+            const listCollection = collection(db, 'lists')
+            const newListDoc = doc(listCollection)
+            const listData = {
+                userId: user.uid,
+                name: listName,
+                tasks: []
+            }
+            await setDoc(newListDoc, listData)
+            console.log('List added successfully')
+            setListName('')
+        }catch (error){
+            console.error('Error adding list:', error)
+        }
+    }
     const handleAddTask = async (e) => {
         e.preventDefault()
         try {
@@ -86,6 +118,9 @@ const TodoList = ({user}) => {
     return (
         <DndProvider backend={HTML5Backend}>
       <div>
+        <h1>Create a New To-do List</h1>
+        <input type='text' placeholder='List Name' value={listName} onChange={(e) =>setListName(e.target.value)}/>
+        <button onClick={handleAddList}>Create list.</button>
         <h2>To-Do List</h2>
         <form onSubmit={handleAddTask}>
           <input type="text" placeholder="Task Title" value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)} />
