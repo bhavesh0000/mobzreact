@@ -12,7 +12,7 @@ function AuthRouter (){
         const unsubscribe = auth.onAuthStateChanged((authUser) =>{
             setUser(authUser)
             if(!authUser){
-                navigate("/login")
+                navigate("/")
             }
         })
         return () =>{
@@ -23,16 +23,16 @@ function AuthRouter (){
         <div className="App2">
             <h1>Firebase Authentication</h1>
             <Routes>
-                <Route path="*" element={<SignUp />}/>
-                <Route path="/login" element={<Login />} />
                 {user ? (
                     <Route path="/todolist" element={<TodoList user={user}/>} />
                         
                 ) : (
                     <>
-                    <Route path="*" element={<SignUp />}/>
+                    <Route path="/signup" element={<SignUp />}/>
                     </>
                 )}
+                <Route path="*" element={<SignUp />}/>
+                <Route path="/login" element={<Login />} />
             </Routes>
         </div>
       )
