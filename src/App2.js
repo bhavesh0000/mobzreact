@@ -30,7 +30,7 @@ function AuthRouter (){
                         
                 ) : (
                     <>
-                    <Route path="/login" element={<Login />}/>
+                    <Route path="*" element={<SignUp />}/>
                     </>
                 )}
             </Routes>
