@@ -3,20 +3,21 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 // import App from './App';
 import reportWebVitals from './reportWebVitals';
-import Count from './counter';
-import Filter from './filter';
+// import Count from './counter';
+// import Filter from './filter';
+import App2 from './App2';
 // import DataGrid from './DataGrid';
-import App1 from './App1'
+// import App1 from './App1'
 import './index.css'
 const root = document.getElementById('root')
 const reactRoot = ReactDOM.createRoot(root)
   reactRoot.render(
     <React.StrictMode>
-      <App1 />
-      <Count/>
-      <Filter/>
+      {/* <App1 /> */}
+      <App2 />
+      {/* <Count/> */}
+      {/* <Filter/> */}
     </React.StrictMode>,
-    
   )
 
 // If you want to start measuring performance in your app, pass a function
