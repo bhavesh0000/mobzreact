@@ -16,26 +16,27 @@ const getTaskColor = (priority) => {
     }
 };
 
-const Task = ({ task, index, moveTask, handleDeleteTask }) => {
+const Task = ({ task, index, moveTask, handleDeleteTask, tasks }) => {
     const ref = useRef(null);
 
     const [, drop] = useDrop({
         accept: 'TASK',
-        hover: (draggedItem) => {
-            if (draggedItem.index !== index) {
-                moveTask(draggedItem.index, index);
-                draggedItem.index = index;
+        hover: (draggedItem, monitor) => {
+            if (draggedItem.id !== task.id) {
+                const draggedIndex = tasks.findIndex(t => t.id === draggedItem.id)
+                if (draggedIndex < 0) return
+                moveTask(draggedItem.id, task.listId, undefined, index);
             }
         }
     });
 
     const [{ isDragging }, drag] = useDrag({
         type: 'TASK',
-        item: { index, listId: task.listId },
+        item: { id: task.id, listId: task.listId },
         end: (item, monitor) => {
             const dropResult = monitor.getDropResult();
             if (item && dropResult) {
-                moveTask(item.index, dropResult.index, dropResult.listId);
+                moveTask(item.id, dropResult.listId, dropResult.priorityZone);
             }
         },
         collect: (monitor) => ({
@@ -73,7 +74,7 @@ const TaskList1 = ({ list, tasks, moveTask, handleDeleteList, handleDeleteTask }
             <h2>{list.name}</h2>
             <button onClick={() => handleDeleteList(list.id)}>Delete List</button>
             {tasks.filter(task => task.listId === list.id).map((task, index) => (
-                <Task key={task.id} index={index} task={task} moveTask={moveTask} handleDeleteTask={handleDeleteTask} />
+                <Task key={task.id} index={index} task={task} moveTask={moveTask} handleDeleteTask={handleDeleteTask} tasks={tasks} />
             ))}
         </div>
     );
@@ -114,7 +115,7 @@ function TodoList() {
         const [, drop] = useDrop({
             accept: 'TASK',
             drop: (item) => {
-                moveTask(item.index, tasks.length, item.listId, priority);
+                return { priorityZone: priority }
             }
         });
     
@@ -128,27 +129,27 @@ function TodoList() {
     };
     
 
-    const moveTask = useCallback(async (dragIndex, hoverIndex, newListID, priorityZone) => {
-        if (typeof dragIndex === "undefined" || !tasks[dragIndex]) {
-            console.error("Invalid dragIndex:", dragIndex);
-            return;
-        }
+    const moveTask = useCallback(async (taskId, targetListID, priorityZone, targetIndex) => {
+        const draggedTask = tasks.find(t => t.id === taskId);
+    if (!draggedTask) {
+        console.error("Could not find task with ID:", taskId);
+        return;
+    }
 
-        const draggedTask = tasks[dragIndex];
-        const remainingTasks = [...tasks];
-        draggedTask.listId = newListID || draggedTask.listId;
+    draggedTask.listId = targetListID || draggedTask.listId;
 
-        if (priorityZone) {
-            draggedTask.priority = priorityZone;
-        }
+    if (priorityZone) {
+        draggedTask.priority = priorityZone;
+    }
+    if(typeof targetIndex !== "undefined"){
+        const reorderedTasks = [...tasks]
+        reorderedTasks.splice(tasks.findIndex(t => t.id === taskId), 1)
+        reorderedTasks.splice(targetIndex, 0, draggedTask)
+        setTasks(reorderedTasks)
+    }
 
-        remainingTasks.splice(dragIndex, 1);
-        remainingTasks.splice(hoverIndex, 0, draggedTask);
-
-        const taskRef = doc(db, 'tasks', draggedTask.id);
-        await updateDoc(taskRef, { listId: draggedTask.listId, priority: draggedTask.priority });
-
-        setTasks(remainingTasks);
+    const taskRef = doc(db, 'tasks', draggedTask.id);
+    await updateDoc(taskRef, { listId: draggedTask.listId, priority: draggedTask.priority });
     }, [tasks]);
 
     const handleDeleteList = useCallback(async (listId) => {
