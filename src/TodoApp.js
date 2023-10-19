@@ -97,7 +97,9 @@ function TodoList() {
             const listSnapshot = await getDocs(collection(db, 'lists'));
             const userLists = listSnapshot.docs.filter(doc => doc.data().userId === user.uid);
             setLists(userLists.map(doc => ({ id: doc.id, ...doc.data() })));
-
+            if (userLists.length === 1){
+                setActiveListId(userLists[0].id)
+            }
             const taskQuery = query(collection(db, 'tasks'), where("userId", "==", user.uid));
             const taskSnapshot = await getDocs(taskQuery);
             const userTasks = taskSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
