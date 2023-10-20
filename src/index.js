@@ -5,7 +5,7 @@ import './index.css';
 import reportWebVitals from './reportWebVitals';
 // import Count from './counter';
 // import Filter from './filter';
-import App2 from './App2';
+// import App2 from './App2';
 import App3 from './App3';
 // import DataGrid from './DataGrid';
 // import App1 from './App1'
