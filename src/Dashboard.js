@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import DataGrid from "./DataGrid"
 function Dashboard() {
-    const [activeMenu, setActiveMenu] = useState('Users')
+    const [activeMenu, setActiveMenu] = useState(null)
 
     const dataSources = {
         'Users': [
@@ -21,7 +21,7 @@ function Dashboard() {
             <button onClick={() => setActiveMenu('Users')}>Users</button>
             <button onClick={() => setActiveMenu('Task Lists')}>Task Lists</button>
       <button onClick={() => setActiveMenu('Tasks')}>Tasks</button>
-      <DataGrid dataSource={dataSources[activeMenu]} type={activeMenu} />
+      {activeMenu && <DataGrid dataSource={dataSources[activeMenu]} type={activeMenu} />}
         </div>
     )}
     export default Dashboard
