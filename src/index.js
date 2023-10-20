@@ -6,6 +6,7 @@ import reportWebVitals from './reportWebVitals';
 // import Count from './counter';
 // import Filter from './filter';
 import App2 from './App2';
+import App3 from './App3';
 // import DataGrid from './DataGrid';
 // import App1 from './App1'
 import './index.css'
@@ -14,7 +15,7 @@ const reactRoot = ReactDOM.createRoot(root)
   reactRoot.render(
     <React.StrictMode>
       {/* <App1 /> */}
-      <App2 />
+      <App3 />
       {/* <Count/> */}
       {/* <Filter/> */}
     </React.StrictMode>,
