@@ -203,7 +203,7 @@ function TodoList() {
             return updatedLists
         })
         setListName('');
-    }, [listName, lists]);
+    }, [listName]);
 
     const handleAddTask = useCallback(async () => {
         const user = auth.currentUser;
