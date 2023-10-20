@@ -25,6 +25,14 @@ const Task = ({ task, index, moveTask, handleDeleteTask, tasks }) => {
             if (draggedItem.id !== task.id) {
                 const draggedIndex = tasks.findIndex(t => t.id === draggedItem.id)
                 if (draggedIndex < 0) return
+                const targetRect = ref.current.getBoundingClientRect()
+                const hoverClientY = monitor.getClientOffset().y - targetRect.top
+                if(draggedIndex < index && hoverClientY < targetRect.height / 2){
+                    return
+                }
+                if (draggedIndex > index && hoverClientY > targetRect.height / 2){
+                    return
+                }
                 moveTask(draggedItem.id, task.listId, undefined, index);
             }
         }
@@ -63,7 +71,9 @@ const TaskList1 = ({ list, tasks, moveTask, handleDeleteList, handleDeleteTask }
     const [, drop] = useDrop({
         accept: 'TASK',
         drop: (item) => {
-            return { listId: list.id, index: tasks.length };
+            if(item.listId !== list.id){
+                moveTask(item.id, list.id, undefined, tasks.length)
+            }
         }
     });
 
@@ -115,7 +125,7 @@ function TodoList() {
         const [, drop] = useDrop({
             accept: 'TASK',
             drop: (item) => {
-                return { priorityZone: priority }
+                return { priorityZone: priority, listId: activeListId }
             }
         });
     
@@ -172,6 +182,10 @@ function TodoList() {
     const handleAddList = useCallback(async () => {
         const user = auth.currentUser;
         if (!user) return;
+        if(!listName.trim()){
+            alert('Please enter a valid list name.')
+            return
+        }
 
         const newList = {
             userId: user.uid,
@@ -181,14 +195,26 @@ function TodoList() {
         const newDocRef = doc(collection(db, 'lists'));
         await setDoc(newDocRef, newList);
 
-        setLists([...lists, { id: newDocRef.id, ...newList }]);
+        setLists(prevLists => {
+            const updatedLists = [...prevLists, { id: newDocRef.id, ...newList }]
+            if (updatedLists.length === 1){
+                setActiveListId(newDocRef.id)
+            }
+            return updatedLists
+        })
         setListName('');
     }, [listName, lists]);
 
     const handleAddTask = useCallback(async () => {
         const user = auth.currentUser;
-        if (!user || !activeListId) return;
-
+        if (!user || !activeListId){
+            alert("Please select a list before adding a task.")
+            return
+        }
+        if(!taskTitle.trim() || !taskDescription.trim() || !taskDueDate.trim() || !taskPriority.trim()){
+            alert('Please enter a valid task.')
+            return
+        }
         const newTask = {
             userId: user.uid,
             listId: activeListId,
@@ -216,7 +242,7 @@ function TodoList() {
                     <button onClick={handleAddList}>Add List</button>
                 </div>
                 <div>
-                    <select value={activeListId} onChange={e => setActiveListId(e.target.value)}>
+                    <select value={activeListId || ""} onChange={e => setActiveListId(e.target.value)}>
                         <option value="" disabled>Select a list</option>
                         {lists.map(list => (
                             <option key={list.id} value={list.id}>{list.name}</option>
